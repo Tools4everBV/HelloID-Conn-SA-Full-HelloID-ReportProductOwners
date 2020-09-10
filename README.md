@@ -18,7 +18,7 @@ The PowerShell script "createform.ps1" contains a complete PowerShell script usi
 
 ### Getting started
  1. Download the script "createform.ps1"
- 2. Open the script in your favorite PowerShell console / edditor
+ 2. Open the script in your favorite PowerShell console / editor
  3. Open your HelloID portal
  4. Get or create your own [API Key and Secret](https://docs.helloid.com/hc/en-us/articles/360002008873-API-Keys-Overview)
  5. Update the following connection details in the all-in-one PowerShell script
