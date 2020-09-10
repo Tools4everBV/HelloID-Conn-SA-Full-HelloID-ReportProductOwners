@@ -1,6 +1,6 @@
 <!-- Description -->
 ## Description
-This HelloID Service Automation Delegated Form provides a report containing the members of HelloID Self Service product owner group. The following options are available:
+This HelloID Service Automation Delegated Form provides a report containing the members of a HelloID Self Service product owner group. The following options are available:
  1. Select one of the HelloID Self Service Products
  2. The members of the Resource Owner group are shown
  3. Export to a local CSV file is possible for the selected product or all of the available products
