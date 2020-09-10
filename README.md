@@ -1,3 +1,10 @@
+<!-- Description -->
+## Description
+This HelloID Service Automation Delegated Form provides a report containing the members of HelloID Self Service product owner group. The following options are available:
+ 1. Select one of the HelloID Self Service Products
+ 2. The members of the Resource Owner group are shown
+ 3. Export to a local CSV file is possible for the selected product or all of the available products
+ 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 * [Description](#description)
@@ -5,12 +12,6 @@
   * [Getting started](#getting-started)
 * [Post-setup configuration](#post-setup-configuration)
 
-<!-- Description -->
-## Description
-This HelloID Service Automation Delegated Form provides a report containing the members of HelloID Self Service product owner group. The following options are available:
- 1. Select one of the HelloID Self Service Products
- 2. The members of the Resource Owner group are shown
- 3. Export to a local CSV file is possible for the selected product or all of the available products
 
 ## All-in-one PowerShell setup script
 The PowerShell script "createform.ps1" contains a complete PowerShell script using the HelloID API to create the complete Form including user defined variables, tasks and data sources.
