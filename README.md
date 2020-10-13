@@ -27,7 +27,7 @@ The PowerShell script "createform.ps1" contains a complete PowerShell script usi
   <tr><td>2</td><td>$PortalBaseUrl</td><td>https://customer01.helloid.com</td><td>Your own HelloID portal URL</td></tr>
   <tr><td>3</td><td>$apiKey</td><td></td><td>Your own HelloID API Key</td></tr>
   <tr><td>4</td><td>$apiSecret</td><td></td><td>Your own HelloID API Secret</td></tr>
-  <tr><td>5</td><td>$delegatedFormAccessGroupName</td><td>Users</td><td>Local HelloID group name giving access to this new Delegated Form</td></tr>
+  <tr><td>5</td><td>$delegatedFormAccessGroupNames</td><td>@("Users", "HID_administrators")</td><td>Array of local HelloID group name giving access to this new Delegated Form</td></tr>
 </table>
  6. Run the all-in-one PowerShell script
  
