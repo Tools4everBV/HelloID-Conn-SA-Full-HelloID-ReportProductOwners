@@ -2,7 +2,7 @@
 $PortalBaseUrl = "https://CUSTOMER.helloid.com"
 $apiKey = "API_KEY"
 $apiSecret = "API_SECRET"
-$delegatedFormAccessGroupName = "Users"
+$delegatedFormAccessGroupNames = @("Users", "HID_administrators")
  
 # Create authorization headers with HelloID API key
 $pair = "$apiKey" + ":" + "$apiSecret"
@@ -16,13 +16,9 @@ if($PortalBaseUrl.EndsWith("/") -eq $false){
 }
  
 function Write-ColorOutput($ForegroundColor) {
-    # save the current color
     $fc = $host.UI.RawUI.ForegroundColor
-
-    # set the new color
     $host.UI.RawUI.ForegroundColor = $ForegroundColor
-
-    # output
+    
     if ($args) {
         Write-Output $args
     }
@@ -30,11 +26,8 @@ function Write-ColorOutput($ForegroundColor) {
         $input | Write-Output
     }
 
-    # restore the original color
     $host.UI.RawUI.ForegroundColor = $fc
 }
-
-
 
 
 $variableName = "HIDinternalApiKey"
@@ -565,17 +558,20 @@ try
   
   
   
-$delegatedFormAccessGroupGuid = ""
-  
-try {
-    $uri = ($PortalBaseUrl +"api/v1/groups/$delegatedFormAccessGroupName")
-    $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false
-    $delegatedFormAccessGroupGuid = $response.groupGuid
-    
-    Write-ColorOutput Green "HelloID (access)group '$delegatedFormAccessGroupName' successfully found: $delegatedFormAccessGroupGuid"
-} catch {
-    Write-ColorOutput Red "HelloID (access)group '$delegatedFormAccessGroupName'"
-    $_
+$delegatedFormAccessGroupGuids = @()
+
+foreach($group in $delegatedFormAccessGroupNames) {
+    try {
+        $uri = ($PortalBaseUrl +"api/v1/groups/$group")
+        $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false
+        $delegatedFormAccessGroupGuid = $response.groupGuid
+        $delegatedFormAccessGroupGuids += $delegatedFormAccessGroupGuid
+        
+        Write-ColorOutput Green "HelloID (access)group '$group' successfully found: $delegatedFormAccessGroupGuid"
+    } catch {
+        Write-ColorOutput Red "HelloID (access)group '$group'"
+        $_
+    }
 }
   
   
@@ -598,7 +594,7 @@ try {
             name = "$delegatedFormName";
             dynamicFormGUID = "$formGuid";
             isEnabled = "True";
-            accessGroups = @("$delegatedFormAccessGroupGuid");
+            accessGroups = $delegatedFormAccessGroupGuids;
             useFaIcon = "True";
             faIcon = "fa fa-info-circle";
         }  
