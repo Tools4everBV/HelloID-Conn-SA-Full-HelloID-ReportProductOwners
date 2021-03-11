@@ -1,0 +1,18 @@
+[
+    {
+        "key":  "lastname",
+        "type":  0
+    },
+    {
+        "key":  "firstName",
+        "type":  0
+    },
+    {
+        "key":  "email",
+        "type":  0
+    },
+    {
+        "key":  "username",
+        "type":  0
+    }
+]

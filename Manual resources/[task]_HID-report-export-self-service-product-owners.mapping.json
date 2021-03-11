@@ -1,0 +1,10 @@
+[
+    {
+        "name":  "exportOptions",
+        "value":  "{{form.exportOptions}}"
+    },
+    {
+        "name":  "selectedProduct",
+        "value":  "{{form.selectedProduct.toJsonString}}"
+    }
+]

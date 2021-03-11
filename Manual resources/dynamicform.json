@@ -1,0 +1,123 @@
+[
+    {
+        "templateOptions":  {
+
+                            },
+        "type":  "markdown",
+        "summaryVisibility":  "Hide element",
+        "body":  "Please select the Self Service product in order to see the configured product owners (users). There are different export options available on the server running the HelloID Agent.",
+        "requiresTemplateOptions":  false
+    },
+    {
+        "key":  "selectedProduct",
+        "templateOptions":  {
+                                "label":  "Select product",
+                                "required":  true,
+                                "grid":  {
+                                             "columns":  [
+                                                             {
+                                                                 "headerName":  "Name",
+                                                                 "field":  "Name"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Categories",
+                                                                 "field":  "categories"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Managed By Group",
+                                                                 "field":  "ManagedByGroup"
+                                                             }
+                                                         ],
+                                             "height":  300,
+                                             "rowSelection":  "single"
+                                         },
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_0",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "useFilter":  true,
+                                "useDefault":  false
+                            },
+        "type":  "grid",
+        "summaryVisibility":  "Show",
+        "requiresTemplateOptions":  true
+    },
+    {
+        "key":  "grid",
+        "templateOptions":  {
+                                "label":  "Product oweners",
+                                "required":  false,
+                                "grid":  {
+                                             "columns":  [
+                                                             {
+                                                                 "headerName":  "Username",
+                                                                 "field":  "username"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Email",
+                                                                 "field":  "email"
+                                                             },
+                                                             {
+                                                                 "headerName":  "First Name",
+                                                                 "field":  "firstName"
+                                                             },
+                                                             {
+                                                                 "headerName":  "Lastname",
+                                                                 "field":  "lastname"
+                                                             }
+                                                         ],
+                                             "height":  300,
+                                             "rowSelection":  "single"
+                                         },
+                                "dataSourceConfig":  {
+                                                         "dataSourceGuid":  "$dataSourceGuid_1",
+                                                         "input":  {
+                                                                       "propertyInputs":  [
+                                                                                              {
+                                                                                                  "propertyName":  "selectedProduct",
+                                                                                                  "otherFieldValue":  {
+                                                                                                                          "otherFieldKey":  "selectedProduct"
+                                                                                                                      }
+                                                                                              }
+                                                                                          ]
+                                                                   }
+                                                     },
+                                "useFilter":  true,
+                                "useDefault":  false
+                            },
+        "type":  "grid",
+        "summaryVisibility":  "Hide element",
+        "requiresTemplateOptions":  true
+    },
+    {
+        "key":  "exportOptions",
+        "templateOptions":  {
+                                "label":  "Export options (local export on HelloID Agent server)",
+                                "useObjects":  true,
+                                "options":  [
+                                                {
+                                                    "value":  "none",
+                                                    "label":  "Export nothing"
+                                                },
+                                                {
+                                                    "value":  "selected",
+                                                    "label":  "Export selected product"
+                                                },
+                                                {
+                                                    "value":  "all",
+                                                    "label":  "Export all products"
+                                                }
+                                            ],
+                                "required":  true
+                            },
+        "type":  "radio",
+        "defaultValue":  "",
+        "summaryVisibility":  "Show",
+        "textOrLabel":  "label",
+        "requiresTemplateOptions":  true
+    }
+]

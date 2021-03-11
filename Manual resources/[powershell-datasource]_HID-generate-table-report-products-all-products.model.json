@@ -1,0 +1,18 @@
+[
+    {
+        "key":  "Guid",
+        "type":  0
+    },
+    {
+        "key":  "categories",
+        "type":  0
+    },
+    {
+        "key":  "Name",
+        "type":  0
+    },
+    {
+        "key":  "ManagedByGroup",
+        "type":  0
+    }
+]
