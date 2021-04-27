@@ -42,3 +42,6 @@ This Powershell data source uses the HelloID API the receive all HelloID users c
 
 ### Delegated form task 'HID-report-export-self-service-product-owners'
 This delegated form task runs the same HelloID API calls as the PowerShell data source and export the data to a local CSV file if selected in the form.
+
+# HelloID Docs
+The official HelloID documentation can be found at: https://docs.helloid.com/
