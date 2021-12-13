@@ -49,7 +49,7 @@ This Powershell data source uses the HelloID API the receive all HelloID users c
 This delegated form task runs the same HelloID API calls as the PowerShell data source and export the data to a local CSV file if selected in the form.
 
 ## Getting help
-_If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/644-helloid-sa-exchange-on-premises-report-product-owners)_
+_If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/644-helloid-sa-helloid-report-product-owners)_
 
 ## HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/
