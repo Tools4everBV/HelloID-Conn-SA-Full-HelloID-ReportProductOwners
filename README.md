@@ -4,14 +4,19 @@ This HelloID Service Automation Delegated Form provides a report containing the 
  1. Select one of the available HelloID Self Service Products
  2. The members of the Resource Owner group are shown
  3. Export to a local CSV file on the HelloID Agent server is possible for the selected product or all of the available products
- 
+
+## Versioning
+| Version | Description | Date |
+| - | - | - |
+| 1.0.1   | Added version number and updated all-in-one script | 2021/12/13  |
+| 1.0.0   | Initial release | 2020/09/08  |
+
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 * [Description](#description)
 * [All-in-one PowerShell setup script](#all-in-one-powershell-setup-script)
   * [Getting started](#getting-started)
 * [Post-setup configuration](#post-setup-configuration)
-
 
 ## All-in-one PowerShell setup script
 The PowerShell script "createform.ps1" contains a complete PowerShell script using the HelloID API to create the complete Form including user defined variables, tasks and data sources.
@@ -43,5 +48,8 @@ This Powershell data source uses the HelloID API the receive all HelloID users c
 ### Delegated form task 'HID-report-export-self-service-product-owners'
 This delegated form task runs the same HelloID API calls as the PowerShell data source and export the data to a local CSV file if selected in the form.
 
-# HelloID Docs
+## Getting help
+_If you need help, feel free to ask questions on our [forum](https://forum.helloid.com/forum/helloid-connectors/service-automation/644-helloid-sa-exchange-on-premises-report-product-owners)_
+
+## HelloID Docs
 The official HelloID documentation can be found at: https://docs.helloid.com/
