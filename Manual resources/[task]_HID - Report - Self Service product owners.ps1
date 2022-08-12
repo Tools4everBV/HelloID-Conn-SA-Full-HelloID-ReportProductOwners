@@ -1,6 +1,15 @@
+$VerbosePreference = "SilentlyContinue"
+$InformationPreference = "Continue"
+$WarningPreference = "Continue"
+
+# variables configured in form
+$exportOptions = $form.exportOptions
+$selectedProduct = $form.selectedProduct
+
+
 try {
-    $selectedProductJson = $selectedProduct | ConvertFrom-Json
-    $selectedGuid = $selectedProductJson.Guid
+    #$selectedProductJson = $selectedProduct | ConvertFrom-Json
+    $selectedGuid = $selectedProduct.Guid
     
     if($HIDreportFolder.EndsWith("\") -eq $false){
         $HIDreportFolder = $HIDreportFolder + "\"
@@ -10,8 +19,8 @@ try {
 
     
     #HelloID variables
-    $apiKey = $HIDinternalApiKey
-    $apiSecret = $HIDinternalApiSecret
+    $apiKey = $portalApiKey
+    $apiSecret = $portalApiSecret
     
     # Create authorization headers with HelloID API key
     $pair = "$apiKey" + ":" + "$apiSecret"
@@ -30,7 +39,7 @@ try {
     $take = 100
     $userCount = 1  #fake initial user count to get into the loop
     
-    while($userCount -gt 0) {
+    while($userCount -gt 0) {        
         $tmpUsers = $null
         $uri = ($PortalBaseUrl +"api/v1/users?enabled=true&skip=$skip&take=$take")
         $tmpUsers = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false
@@ -56,8 +65,7 @@ try {
         "selected" {
             $products = $allProducts | Where-object {$_.selfServiceProductGUID -eq $selectedGuid}
             break;
-        }
-        
+        }        
         "all" {
             $products = $allProducts
             break;
@@ -68,20 +76,19 @@ try {
             break;
         }
     }
-
+    
     if([string]::IsNullOrEmpty($products))
     {
         $productCount = $null
     } else {
-        $productCount = @($products).Count
-        HID-Write-Status -Message "product count: $productCount" -Event Information
+        $productCount = @($products).Count        
+        Write-Information "Product count: $productCount"
     }
     
     $exportData = @()
     if ($productCount -gt 0) {
-        foreach($p in $products) {
+        foreach($p in $products) {                        
             $groupName = $p.managedByGroupName
-    
             if([string]::IsNullOrEmpty($groupName) -eq $false) {
                 $uri = ($PortalBaseUrl +"api/v1/groups/$groupName")
                 $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false 
@@ -98,21 +105,39 @@ try {
                         "firstName" = $hidUserHashtable.$u.firstName;
                         "lastName" = $hidUserHashtable.$u.lastName;
                         "email" = $hidUserHashtable.$u.contactEmail;
-                    }
+                    }                    
                 }
             }
         }
-        $exportCount = @($exportData).Count
-        HID-Write-Status -Message "Export row count: $exportCount" -Event Information
+        $exportCount = @($exportData).Count        
+        Write-Information "Export row count: $exportCount"
         
         $exportData = $exportData | Sort-Object -Property productName, userName
         $exportData | Export-Csv -Path $exportFile -Delimiter ";" -NoTypeInformation
         
-        HID-Write-Status -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
-        HID-Write-Summary -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
+        Write-Information "Report [$exportFile] containing $exportCount records created successfully"
+        $Log = @{
+            Action            = "Undefined" # optional. ENUM (undefined = default) 
+            System            = "ActiveDirectory" # optional (free format text) 
+            Message           = "Report [$exportFile] containing $exportCount records created successfully" # required (free format text) 
+            IsError           = $false # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
+            TargetDisplayName = $exportFile # optional (free format text) 
+            TargetIdentifier  = "" # optional (free format text) 
+        }
+        #send result back  
+        Write-Information -Tags "Audit" -MessageData $log        
     
     }
-} catch {
-    HID-Write-Status -Message "Could not export Self Service product owner report. Error: $($_.Exception.Message)" -Event Error
-    HID-Write-Summary -Message "Failed to export Self Service product owner report" -Event Failed
+} catch {    
+    Write-Error "Could not export Self Service product owner report. Error: $($_.Exception.Message)"
+    $Log = @{
+        Action            = "Undefined" # optional. ENUM (undefined = default) 
+        System            = "ActiveDirectory" # optional (free format text) 
+        Message           = "Failed to export Self Service product owner report" # required (free format text) 
+        IsError           = $true # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) 
+        TargetDisplayName = $exportFile # optional (free format text) 
+        TargetIdentifier  = "" # optional (free format text) 
+    }
+    #send result back  
+    Write-Information -Tags "Audit" -MessageData $log
 }

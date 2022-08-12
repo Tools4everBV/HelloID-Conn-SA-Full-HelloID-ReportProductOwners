@@ -8,6 +8,7 @@ This HelloID Service Automation Delegated Form provides a report containing the 
 ## Versioning
 | Version | Description | Date |
 | - | - | - |
+| 1.0.2   | Added version number and updated code for SA-agent and auditlogging | 2022/08/03  |
 | 1.0.1   | Added version number and updated all-in-one script | 2021/12/13  |
 | 1.0.0   | Initial release | 2020/09/08  |
 
@@ -45,7 +46,7 @@ This Powershell data source uses the HelloID API the receive all configured Hell
 ### Powershell data source 'HID-generate-table-report-products-get-product-owners'
 This Powershell data source uses the HelloID API the receive all HelloID users configured as resource owner of the selected HelloID product.
 
-### Delegated form task 'HID-report-export-self-service-product-owners'
+### Delegated form task 'HID - Report - Self Service product owners'
 This delegated form task runs the same HelloID API calls as the PowerShell data source and export the data to a local CSV file if selected in the form.
 
 ## Getting help

@@ -6,7 +6,9 @@
         "type":  "markdown",
         "summaryVisibility":  "Hide element",
         "body":  "Please select the Self Service product in order to see the configured product owners (users). There are different export options available on the server running the HelloID Agent.",
-        "requiresTemplateOptions":  false
+        "requiresTemplateOptions":  false,
+        "requiresKey":  false,
+        "requiresDataSource":  false
     },
     {
         "key":  "selectedProduct",
@@ -44,12 +46,14 @@
                             },
         "type":  "grid",
         "summaryVisibility":  "Show",
-        "requiresTemplateOptions":  true
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  true
     },
     {
         "key":  "grid",
         "templateOptions":  {
-                                "label":  "Product oweners",
+                                "label":  "Product owners",
                                 "required":  false,
                                 "grid":  {
                                              "columns":  [
@@ -91,7 +95,9 @@
                             },
         "type":  "grid",
         "summaryVisibility":  "Hide element",
-        "requiresTemplateOptions":  true
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  true
     },
     {
         "key":  "exportOptions",
@@ -118,6 +124,8 @@
         "defaultValue":  "",
         "summaryVisibility":  "Show",
         "textOrLabel":  "label",
-        "requiresTemplateOptions":  true
+        "requiresTemplateOptions":  true,
+        "requiresKey":  true,
+        "requiresDataSource":  false
     }
 ]

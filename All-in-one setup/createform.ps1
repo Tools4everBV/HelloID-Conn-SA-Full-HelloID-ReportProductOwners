@@ -16,35 +16,35 @@ $script:duplicateFormSuffix = "_tmp" #the suffix will be added to all HelloID re
 #NOTE: You can also update the HelloID Global variable values afterwards in the HelloID Admin Portal: https://<CUSTOMER>.helloid.com/admin/variablelibrary
 $globalHelloIDVariables = [System.Collections.Generic.List[object]]@();
 
-#Global variable #1 >> HIDinternalApiKey
-$tmpName = @'
-HIDinternalApiKey
-'@ 
-$tmpValue = "" 
-$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "True"});
-
-#Global variable #2 >> HIDinternalApiSecret
-$tmpName = @'
-HIDinternalApiSecret
-'@ 
-$tmpValue = "" 
-$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "True"});
-
-#Global variable #3 >> HIDreportFolder
-$tmpName = @'
-HIDreportFolder
-'@ 
-$tmpValue = @'
-C:\HIDreports
-'@ 
-$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "False"});
-
-#Global variable #4 >> portalBaseUrl
+#Global variable #1 >> portalBaseUrl
 $tmpName = @'
 portalBaseUrl
 '@ 
 $tmpValue = @'
 {{portal.baseUrl}}
+'@ 
+$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "False"});
+
+#Global variable #2 >> portalApiKey
+$tmpName = @'
+portalApiKey
+'@ 
+$tmpValue = "" 
+$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "True"});
+
+#Global variable #3 >> portalApiSecret
+$tmpName = @'
+portalApiSecret
+'@ 
+$tmpValue = "" 
+$globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "True"});
+
+#Global variable #4 >> HIDreportFolder
+$tmpName = @'
+HIDreportFolder
+'@ 
+$tmpValue = @'
+C:\HIDreports
 '@ 
 $globalHelloIDVariables.Add([PSCustomObject]@{name = $tmpName; value = $tmpValue; secret = "False"});
 
@@ -111,7 +111,7 @@ function Invoke-HelloIDGlobalVariable {
                 secret   = $Secret;
                 ItemType = 0;
             }    
-            $body = ConvertTo-Json -InputObject $body
+            $body = ConvertTo-Json -InputObject $body -Depth 100
     
             $uri = ($script:PortalBaseUrl + "api/v1/automation/variable")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -157,7 +157,7 @@ function Invoke-HelloIDAutomationTask {
                 objectGuid          = $ObjectGuid;
                 variables           = (ConvertFrom-Json-WithEmptyArray($Variables));
             }
-            $body = ConvertTo-Json -InputObject $body
+            $body = ConvertTo-Json -InputObject $body -Depth 100
     
             $uri = ($script:PortalBaseUrl +"api/v1/automationtasks/powershell")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -212,7 +212,7 @@ function Invoke-HelloIDDatasource {
                 script             = $DatasourcePsScript;
                 input              = (ConvertFrom-Json-WithEmptyArray($DatasourceInput));
             }
-            $body = ConvertTo-Json -InputObject $body
+            $body = ConvertTo-Json -InputObject $body -Depth 100
       
             $uri = ($script:PortalBaseUrl +"api/v1/datasource")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -277,10 +277,11 @@ function Invoke-HelloIDDelegatedForm {
     param(
         [parameter(Mandatory)][String]$DelegatedFormName,
         [parameter(Mandatory)][String]$DynamicFormGuid,
-        [parameter()][String][AllowEmptyString()]$AccessGroups,
+        [parameter()][Array][AllowEmptyString()]$AccessGroups,
         [parameter()][String][AllowEmptyString()]$Categories,
         [parameter(Mandatory)][String]$UseFaIcon,
         [parameter()][String][AllowEmptyString()]$FaIcon,
+        [parameter()][String][AllowEmptyString()]$task,
         [parameter(Mandatory)][Ref]$returnObject
     )
     $delegatedFormCreated = $false
@@ -300,11 +301,16 @@ function Invoke-HelloIDDelegatedForm {
                 name            = $DelegatedFormName;
                 dynamicFormGUID = $DynamicFormGuid;
                 isEnabled       = "True";
-                accessGroups    = (ConvertFrom-Json-WithEmptyArray($AccessGroups));
                 useFaIcon       = $UseFaIcon;
                 faIcon          = $FaIcon;
-            }    
-            $body = ConvertTo-Json -InputObject $body
+                task            = ConvertFrom-Json -inputObject $task;
+            }
+            if(-not[String]::IsNullOrEmpty($AccessGroups)) { 
+                $body += @{
+                    accessGroups    = (ConvertFrom-Json-WithEmptyArray($AccessGroups));
+                }
+            }
+            $body = ConvertTo-Json -InputObject $body -Depth 100
     
             $uri = ($script:PortalBaseUrl +"api/v1/delegatedforms")
             $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -329,6 +335,8 @@ function Invoke-HelloIDDelegatedForm {
     $returnObject.value.guid = $delegatedFormGuid
     $returnObject.value.created = $delegatedFormCreated
 }
+
+
 <# Begin: HelloID Global Variables #>
 foreach ($item in $globalHelloIDVariables) {
 	Invoke-HelloIDGlobalVariable -Name $item.name -Value $item.value -Secret $item.secret 
@@ -341,8 +349,8 @@ foreach ($item in $globalHelloIDVariables) {
 $tmpPsScript = @'
 try {
     #HelloID variables
-    $apiKey = $HIDinternalApiKey
-    $apiSecret = $HIDinternalApiSecret
+    $apiKey = $portalApiKey
+    $apiSecret = $portalApiSecret
 
     # Create authorization headers with HelloID API key
     $pair = "$apiKey" + ":" + "$apiSecret"
@@ -431,8 +439,8 @@ Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_1_Name -DatasourceType 
 $tmpPsScript = @'
 try {
     #HelloID variables
-    $apiKey = $HIDinternalApiKey
-    $apiSecret = $HIDinternalApiSecret
+    $apiKey = $portalApiKey
+    $apiSecret = $portalApiSecret
 
     # Create authorization headers with HelloID API key
     $pair = "$apiKey" + ":" + "$apiSecret"
@@ -467,7 +475,7 @@ try {
 }
 '@ 
 $tmpModel = @'
-[{"key":"Guid","type":0},{"key":"categories","type":0},{"key":"Name","type":0},{"key":"ManagedByGroup","type":0}]
+[{"key":"categories","type":0},{"key":"Guid","type":0},{"key":"Name","type":0},{"key":"ManagedByGroup","type":0}]
 '@ 
 $tmpInput = @'
 []
@@ -482,7 +490,7 @@ Invoke-HelloIDDatasource -DatasourceName $dataSourceGuid_0_Name -DatasourceType 
 
 <# Begin: Dynamic Form "HID - Report - Self Service product owners" #>
 $tmpSchema = @"
-[{"templateOptions":{},"type":"markdown","summaryVisibility":"Hide element","body":"Please select the Self Service product in order to see the configured product owners (users). There are different export options available on the server running the HelloID Agent.","requiresTemplateOptions":false},{"key":"selectedProduct","templateOptions":{"label":"Select product","required":true,"grid":{"columns":[{"headerName":"Name","field":"Name"},{"headerName":"Categories","field":"categories"},{"headerName":"Managed By Group","field":"ManagedByGroup"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true},{"key":"grid","templateOptions":{"label":"Product oweners","required":false,"grid":{"columns":[{"headerName":"Username","field":"username"},{"headerName":"Email","field":"email"},{"headerName":"First Name","field":"firstName"},{"headerName":"Lastname","field":"lastname"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_1","input":{"propertyInputs":[{"propertyName":"selectedProduct","otherFieldValue":{"otherFieldKey":"selectedProduct"}}]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Hide element","requiresTemplateOptions":true},{"key":"exportOptions","templateOptions":{"label":"Export options (local export on HelloID Agent server)","useObjects":true,"options":[{"value":"none","label":"Export nothing"},{"value":"selected","label":"Export selected product"},{"value":"all","label":"Export all products"}],"required":true},"type":"radio","defaultValue":"","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true}]
+[{"templateOptions":{},"type":"markdown","summaryVisibility":"Hide element","body":"Please select the Self Service product in order to see the configured product owners (users). There are different export options available on the server running the HelloID Agent.","requiresTemplateOptions":false,"requiresKey":false,"requiresDataSource":false},{"key":"selectedProduct","templateOptions":{"label":"Select product","required":true,"grid":{"columns":[{"headerName":"Name","field":"Name"},{"headerName":"Categories","field":"categories"},{"headerName":"Managed By Group","field":"ManagedByGroup"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_0","input":{"propertyInputs":[]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Show","requiresTemplateOptions":true,"requiresKey":true,"requiresDataSource":true},{"key":"grid","templateOptions":{"label":"Product owners","required":false,"grid":{"columns":[{"headerName":"Username","field":"username"},{"headerName":"Email","field":"email"},{"headerName":"First Name","field":"firstName"},{"headerName":"Lastname","field":"lastname"}],"height":300,"rowSelection":"single"},"dataSourceConfig":{"dataSourceGuid":"$dataSourceGuid_1","input":{"propertyInputs":[{"propertyName":"selectedProduct","otherFieldValue":{"otherFieldKey":"selectedProduct"}}]}},"useFilter":true,"useDefault":false},"type":"grid","summaryVisibility":"Hide element","requiresTemplateOptions":true,"requiresKey":true,"requiresDataSource":true},{"key":"exportOptions","templateOptions":{"label":"Export options (local export on HelloID Agent server)","useObjects":true,"options":[{"value":"none","label":"Export nothing"},{"value":"selected","label":"Export selected product"},{"value":"all","label":"Export all products"}],"required":true},"type":"radio","defaultValue":"","summaryVisibility":"Show","textOrLabel":"label","requiresTemplateOptions":true,"requiresKey":true,"requiresDataSource":false}]
 "@ 
 
 $dynamicFormGuid = [PSCustomObject]@{} 
@@ -494,19 +502,23 @@ Invoke-HelloIDDynamicForm -FormName $dynamicFormName -FormSchema $tmpSchema  -re
 
 <# Begin: Delegated Form Access Groups and Categories #>
 $delegatedFormAccessGroupGuids = @()
-foreach($group in $delegatedFormAccessGroupNames) {
-    try {
-        $uri = ($script:PortalBaseUrl +"api/v1/groups/$group")
-        $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false
-        $delegatedFormAccessGroupGuid = $response.groupGuid
-        $delegatedFormAccessGroupGuids += $delegatedFormAccessGroupGuid
-        
-        Write-Information "HelloID (access)group '$group' successfully found$(if ($script:debugLogging -eq $true) { ": " + $delegatedFormAccessGroupGuid })"
-    } catch {
-        Write-Error "HelloID (access)group '$group', message: $_"
+if(-not[String]::IsNullOrEmpty($delegatedFormAccessGroupNames)){
+    foreach($group in $delegatedFormAccessGroupNames) {
+        try {
+            $uri = ($script:PortalBaseUrl +"api/v1/groups/$group")
+            $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false
+            $delegatedFormAccessGroupGuid = $response.groupGuid
+            $delegatedFormAccessGroupGuids += $delegatedFormAccessGroupGuid
+            
+            Write-Information "HelloID (access)group '$group' successfully found$(if ($script:debugLogging -eq $true) { ": " + $delegatedFormAccessGroupGuid })"
+        } catch {
+            Write-Error "HelloID (access)group '$group', message: $_"
+        }
+    }
+    if($null -ne $delegatedFormAccessGroupGuids){
+        $delegatedFormAccessGroupGuids = ($delegatedFormAccessGroupGuids | Select-Object -Unique | ConvertTo-Json -Depth 100 -Compress)
     }
 }
-$delegatedFormAccessGroupGuids = ($delegatedFormAccessGroupGuids | Select-Object -Unique | ConvertTo-Json -Compress)
 
 $delegatedFormCategoryGuids = @()
 foreach($category in $delegatedFormCategories) {
@@ -522,7 +534,7 @@ foreach($category in $delegatedFormCategories) {
         $body = @{
             name = @{"en" = $category};
         }
-        $body = ConvertTo-Json -InputObject $body
+        $body = ConvertTo-Json -InputObject $body -Depth 100
 
         $uri = ($script:PortalBaseUrl +"api/v1/delegatedformcategories")
         $response = Invoke-RestMethod -Method Post -Uri $uri -Headers $script:headers -ContentType "application/json" -Verbose:$false -Body $body
@@ -532,7 +544,7 @@ foreach($category in $delegatedFormCategories) {
         Write-Information "HelloID Delegated Form category '$category' successfully created$(if ($script:debugLogging -eq $true) { ": " + $tmpGuid })"
     }
 }
-$delegatedFormCategoryGuids = (ConvertTo-Json -InputObject $delegatedFormCategoryGuids -Compress)
+$delegatedFormCategoryGuids = (ConvertTo-Json -InputObject $delegatedFormCategoryGuids -Depth 100 -Compress)
 <# End: Delegated Form Access Groups and Categories #>
 
 <# Begin: Delegated Form #>
@@ -540,142 +552,10 @@ $delegatedFormRef = [PSCustomObject]@{guid = $null; created = $null}
 $delegatedFormName = @'
 HID - Report - Self Service product owners
 '@
-Invoke-HelloIDDelegatedForm -DelegatedFormName $delegatedFormName -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-info-circle" -returnObject ([Ref]$delegatedFormRef) 
-<# End: Delegated Form #>
-
-<# Begin: Delegated Form Task #>
-if($delegatedFormRef.created -eq $true) { 
-	$tmpScript = @'
-try {
-    $selectedProductJson = $selectedProduct | ConvertFrom-Json
-    $selectedGuid = $selectedProductJson.Guid
-    
-    if($HIDreportFolder.EndsWith("\") -eq $false){
-        $HIDreportFolder = $HIDreportFolder + "\"
-    }
-    $timeStamp = $(get-date -f yyyyMMddHHmmss)
-    $exportFile = $HIDreportFolder + "_SelfServiceProductOwnerReport" + $timeStamp + ".csv"
-
-    
-    #HelloID variables
-    $apiKey = $HIDinternalApiKey
-    $apiSecret = $HIDinternalApiSecret
-    
-    # Create authorization headers with HelloID API key
-    $pair = "$apiKey" + ":" + "$apiSecret"
-    $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
-    $base64 = [System.Convert]::ToBase64String($bytes)
-    $key = "Basic $base64"
-    $headers = @{"authorization" = $Key}
-    # Define specific endpoint URI
-    if($PortalBaseUrl.EndsWith("/") -eq $false){
-        $PortalBaseUrl = $PortalBaseUrl + "/"
-    }
-    
-    # Lets get all HelloID Users
-    $hidUsers = $null
-    $skip = 0
-    $take = 100
-    $userCount = 1  #fake initial user count to get into the loop
-    
-    while($userCount -gt 0) {
-        $tmpUsers = $null
-        $uri = ($PortalBaseUrl +"api/v1/users?enabled=true&skip=$skip&take=$take")
-        $tmpUsers = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false
-        
-        $skip += $take
-        $userCount = @($tmpUsers).Count
-        $hidUsers += $tmpUsers
-    }
-    $userCount = @($hidUsers).Count
-    
-    # Create hasTable with all HelloID users
-    $hidUserHashtable = @{}
-    foreach($hidUser in $hidUsers){
-        $null = $hidUserHashtable.Add($hidUser.userGUID, $hidUser)
-    }
-    
-    # Get all required HelloID products
-    $uri = ($PortalBaseUrl +"api/v1/selfservice/products")
-    $allProducts = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false 
-    $productCount = @($allProducts).Count
-    
-    switch($exportOptions) {
-        "selected" {
-            $products = $allProducts | Where-object {$_.selfServiceProductGUID -eq $selectedGuid}
-            break;
-        }
-        
-        "all" {
-            $products = $allProducts
-            break;
-        }
-        
-        "none" {
-            $products = $null
-            break;
-        }
-    }
-
-    if([string]::IsNullOrEmpty($products))
-    {
-        $productCount = $null
-    } else {
-        $productCount = @($products).Count
-        HID-Write-Status -Message "product count: $productCount" -Event Information
-    }
-    
-    $exportData = @()
-    if ($productCount -gt 0) {
-        foreach($p in $products) {
-            $groupName = $p.managedByGroupName
-    
-            if([string]::IsNullOrEmpty($groupName) -eq $false) {
-                $uri = ($PortalBaseUrl +"api/v1/groups/$groupName")
-                $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType "application/json" -Verbose:$false 
-                $groupMembers = $response.users
-    
-                # get user details from hashtable based on userGUID
-                foreach($u in $groupMembers) {
-                    $exportData += [pscustomobject]@{
-                        "productName" = $p.name;
-                        "productCategries" = ($p.categories -join ", ");
-                        "groupName" = $groupName;
-                        "userDomain" = $hidUserHashtable.$u.source;
-                        "userName" = $hidUserHashtable.$u.userName;
-                        "firstName" = $hidUserHashtable.$u.firstName;
-                        "lastName" = $hidUserHashtable.$u.lastName;
-                        "email" = $hidUserHashtable.$u.contactEmail;
-                    }
-                }
-            }
-        }
-        $exportCount = @($exportData).Count
-        HID-Write-Status -Message "Export row count: $exportCount" -Event Information
-        
-        $exportData = $exportData | Sort-Object -Property productName, userName
-        $exportData | Export-Csv -Path $exportFile -Delimiter ";" -NoTypeInformation
-        
-        HID-Write-Status -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
-        HID-Write-Summary -Message "Report [$exportFile] containing $exportCount records created successfully" -Event Success
-    
-    }
-} catch {
-    HID-Write-Status -Message "Could not export Self Service product owner report. Error: $($_.Exception.Message)" -Event Error
-    HID-Write-Summary -Message "Failed to export Self Service product owner report" -Event Failed
-}
-'@; 
-
-	$tmpVariables = @'
-[{"name":"exportOptions","value":"{{form.exportOptions}}","secret":false,"typeConstraint":"string"},{"name":"selectedProduct","value":"{{form.selectedProduct.toJsonString}}","secret":false,"typeConstraint":"string"}]
+$tmpTask = @'
+{"name":"HID - Report - Self Service product owners","script":"$VerbosePreference = \"SilentlyContinue\"\r\n$InformationPreference = \"Continue\"\r\n$WarningPreference = \"Continue\"\r\n\r\n# variables configured in form\r\n$exportOptions = $form.exportOptions\r\n$selectedProduct = $form.selectedProduct\r\n\r\n\r\ntry {\r\n    #$selectedProductJson = $selectedProduct | ConvertFrom-Json\r\n    $selectedGuid = $selectedProduct.Guid\r\n    \r\n    if($HIDreportFolder.EndsWith(\"\\\") -eq $false){\r\n        $HIDreportFolder = $HIDreportFolder + \"\\\"\r\n    }\r\n    $timeStamp = $(get-date -f yyyyMMddHHmmss)\r\n    $exportFile = $HIDreportFolder + \"_SelfServiceProductOwnerReport\" + $timeStamp + \".csv\"\r\n\r\n    \r\n    #HelloID variables\r\n    $apiKey = $portalApiKey\r\n    $apiSecret = $portalApiSecret\r\n    \r\n    # Create authorization headers with HelloID API key\r\n    $pair = \"$apiKey\" + \":\" + \"$apiSecret\"\r\n    $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)\r\n    $base64 = [System.Convert]::ToBase64String($bytes)\r\n    $key = \"Basic $base64\"\r\n    $headers = @{\"authorization\" = $Key}\r\n    # Define specific endpoint URI\r\n    if($PortalBaseUrl.EndsWith(\"/\") -eq $false){\r\n        $PortalBaseUrl = $PortalBaseUrl + \"/\"\r\n    }\r\n    \r\n    # Lets get all HelloID Users\r\n    $hidUsers = $null\r\n    $skip = 0\r\n    $take = 100\r\n    $userCount = 1  #fake initial user count to get into the loop\r\n    \r\n    while($userCount -gt 0) {        \r\n        $tmpUsers = $null\r\n        $uri = ($PortalBaseUrl +\"api/v1/users?enabled=true\u0026skip=$skip\u0026take=$take\")\r\n        $tmpUsers = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType \"application/json\" -Verbose:$false\r\n        \r\n        $skip += $take\r\n        $userCount = @($tmpUsers).Count\r\n        $hidUsers += $tmpUsers\r\n    }\r\n    $userCount = @($hidUsers).Count\r\n    \r\n    # Create hasTable with all HelloID users\r\n    $hidUserHashtable = @{}\r\n    foreach($hidUser in $hidUsers){\r\n        $null = $hidUserHashtable.Add($hidUser.userGUID, $hidUser)\r\n    }\r\n    \r\n    # Get all required HelloID products\r\n    $uri = ($PortalBaseUrl +\"api/v1/selfservice/products\")\r\n    $allProducts = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType \"application/json\" -Verbose:$false \r\n    $productCount = @($allProducts).Count\r\n    \r\n    switch($exportOptions) {\r\n        \"selected\" {\r\n            $products = $allProducts | Where-object {$_.selfServiceProductGUID -eq $selectedGuid}\r\n            break;\r\n        }        \r\n        \"all\" {\r\n            $products = $allProducts\r\n            break;\r\n        }\r\n        \r\n        \"none\" {\r\n            $products = $null\r\n            break;\r\n        }\r\n    }\r\n    \r\n    if([string]::IsNullOrEmpty($products))\r\n    {\r\n        $productCount = $null\r\n    } else {\r\n        $productCount = @($products).Count        \r\n        Write-Information \"Product count: $productCount\"\r\n    }\r\n    \r\n    $exportData = @()\r\n    if ($productCount -gt 0) {\r\n        foreach($p in $products) {                        \r\n            $groupName = $p.managedByGroupName\r\n            if([string]::IsNullOrEmpty($groupName) -eq $false) {\r\n                $uri = ($PortalBaseUrl +\"api/v1/groups/$groupName\")\r\n                $response = Invoke-RestMethod -Method Get -Uri $uri -Headers $headers -ContentType \"application/json\" -Verbose:$false \r\n                $groupMembers = $response.users\r\n    \r\n                # get user details from hashtable based on userGUID\r\n                foreach($u in $groupMembers) {\r\n                    $exportData += [pscustomobject]@{\r\n                        \"productName\" = $p.name;\r\n                        \"productCategries\" = ($p.categories -join \", \");\r\n                        \"groupName\" = $groupName;\r\n                        \"userDomain\" = $hidUserHashtable.$u.source;\r\n                        \"userName\" = $hidUserHashtable.$u.userName;\r\n                        \"firstName\" = $hidUserHashtable.$u.firstName;\r\n                        \"lastName\" = $hidUserHashtable.$u.lastName;\r\n                        \"email\" = $hidUserHashtable.$u.contactEmail;\r\n                    }                    \r\n                }\r\n            }\r\n        }\r\n        $exportCount = @($exportData).Count        \r\n        Write-Information \"Export row count: $exportCount\"\r\n        \r\n        $exportData = $exportData | Sort-Object -Property productName, userName\r\n        $exportData | Export-Csv -Path $exportFile -Delimiter \";\" -NoTypeInformation\r\n        \r\n        Write-Information \"Report [$exportFile] containing $exportCount records created successfully\"\r\n        $Log = @{\r\n            Action            = \"Undefined\" # optional. ENUM (undefined = default) \r\n            System            = \"ActiveDirectory\" # optional (free format text) \r\n            Message           = \"Report [$exportFile] containing $exportCount records created successfully\" # required (free format text) \r\n            IsError           = $false # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) \r\n            TargetDisplayName = $exportFile # optional (free format text) \r\n            TargetIdentifier  = \"\" # optional (free format text) \r\n        }\r\n        #send result back  \r\n        Write-Information -Tags \"Audit\" -MessageData $log        \r\n    \r\n    }\r\n} catch {    \r\n    Write-Error \"Could not export Self Service product owner report. Error: $($_.Exception.Message)\"\r\n    $Log = @{\r\n        Action            = \"Undefined\" # optional. ENUM (undefined = default) \r\n        System            = \"ActiveDirectory\" # optional (free format text) \r\n        Message           = \"Failed to export Self Service product owner report\" # required (free format text) \r\n        IsError           = $true # optional. Elastic reporting purposes only. (default = $false. $true = Executed action returned an error) \r\n        TargetDisplayName = $exportFile # optional (free format text) \r\n        TargetIdentifier  = \"\" # optional (free format text) \r\n    }\r\n    #send result back  \r\n    Write-Information -Tags \"Audit\" -MessageData $log\r\n}","runInCloud":false}
 '@ 
 
-	$delegatedFormTaskGuid = [PSCustomObject]@{} 
-$delegatedFormTaskName = @'
-HID-report-export-self-service-product-owners
-'@
-	Invoke-HelloIDAutomationTask -TaskName $delegatedFormTaskName -UseTemplate "False" -AutomationContainer "8" -Variables $tmpVariables -PowershellScript $tmpScript -ObjectGuid $delegatedFormRef.guid -ForceCreateTask $true -returnObject ([Ref]$delegatedFormTaskGuid) 
-} else {
-	Write-Warning "Delegated form '$delegatedFormName' already exists. Nothing to do with the Delegated Form task..." 
-}
-<# End: Delegated Form Task #>
+Invoke-HelloIDDelegatedForm -DelegatedFormName $delegatedFormName -DynamicFormGuid $dynamicFormGuid -AccessGroups $delegatedFormAccessGroupGuids -Categories $delegatedFormCategoryGuids -UseFaIcon "True" -FaIcon "fa fa-info-circle" -task $tmpTask -returnObject ([Ref]$delegatedFormRef) 
+<# End: Delegated Form #>
+

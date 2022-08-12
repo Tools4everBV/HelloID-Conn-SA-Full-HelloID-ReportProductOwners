@@ -1,7 +1,7 @@
 try {
     #HelloID variables
-    $apiKey = $HIDinternalApiKey
-    $apiSecret = $HIDinternalApiSecret
+    $apiKey = $portalApiKey
+    $apiSecret = $portalApiSecret
 
     # Create authorization headers with HelloID API key
     $pair = "$apiKey" + ":" + "$apiSecret"
